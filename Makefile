@@ -1,6 +1,6 @@
 IOBUF_DEBUG ?=
 
-CC = gcc
+CC ?= gcc
 CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -fPIC -D_XOPEN_SOURCE=600
 LDFLAGS = -L.
 CPPFLAGS = -Iinclude
