@@ -41,6 +41,10 @@
 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct iobuf {
 	void *data;
 	size_t capacity;
@@ -94,5 +98,9 @@ size_t iobuf_wsize(struct iobuf *);
 
 /* start of data to write */
 void *iobuf_wstart(struct iobuf *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
