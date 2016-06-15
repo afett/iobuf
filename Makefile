@@ -1,14 +1,14 @@
 IOBUF_DEBUG ?=
 
-CC ?= gcc
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -fPIC -D_XOPEN_SOURCE=600
+CXX ?= g++
+CXXFLAGS = -Wall -Wextra -Werror -fPIC -D_XOPEN_SOURCE=600
 LDFLAGS = -L.
 CPPFLAGS = -Iinclude
 
 ifeq ($(IOBUF_DEBUG),1)
-DEBUG_CFLAGS += -g -O0
+DEBUG_CXXFLAGS += -g -O0
 else
-DEBUG_CFLAGS += -O2
+DEBUG_CXXFLAGS += -O2
 endif
 
 PREFIX ?= /usr/local
@@ -16,12 +16,12 @@ PREFIX ?= /usr/local
 TARGET = libiobuf.so
 TESTS = test-iobuf
 
-SRC = src/iobuf.c
-OBJ = $(SRC:%.c=%.o)
-COV_OBJ = $(SRC:%.c=%.cov.o)
+SRC = src/iobuf.cc
+OBJ = $(SRC:%.cc=%.o)
+COV_OBJ = $(SRC:%.cc=%.cov.o)
 
-TEST_SRC = tests/test-iobuf.c
-TEST_OBJ = $(TEST_SRC:%.c=%.cov.o)
+TEST_SRC = tests/test-iobuf.cc
+TEST_OBJ = $(TEST_SRC:%.cc=%.cov.o)
 TEST_LIB = libiobuf_test.a
 
 ALL_OBJ = $(OBJ) $(TEST_OBJ) $(COV_OBJ)
@@ -31,19 +31,19 @@ GCDA = $(ALL_OBJ:%.o=%.gcda)
 all: $(TARGET) $(TESTS)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LDFLAGS) -shared $(LIBS)
+	$(CXX) -o $@ $(OBJ) $(LDFLAGS) -shared $(LIBS)
 
 $(TEST_LIB): $(COV_OBJ)
 	ar rcs $@ $^
 
-%.cov.o : %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -O0 -g --coverage -c $< -o $@
+%.cov.o : %.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -O0 -g --coverage -c $< -o $@
 
-%.o : %.c
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) $(CPPFLAGS) -c $< -o $@
+%.o : %.cc
+	$(CXX) $(CXXFLAGS) $(DEBUG_CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(TESTS): $(TEST_LIB) $(TEST_OBJ)
-	$(CC) -o $@ $(TEST_OBJ) $(TEST_LIB) $(LDFLAGS) --coverage $(LIBS)
+	$(CXX) -o $@ $(TEST_OBJ) $(TEST_LIB) $(LDFLAGS) --coverage $(LIBS)
 
 run_tests: $(TESTS)
 	./$(TESTS)

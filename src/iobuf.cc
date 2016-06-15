@@ -78,12 +78,12 @@ void iobuf_drain(struct iobuf *self, size_t size)
 
 struct iobuf *iobuf_new()
 {
-	return calloc(1, sizeof(struct iobuf));
+	return static_cast<iobuf*>(calloc(1, sizeof(struct iobuf)));
 }
 
 struct iobuf *iobuf_new1(size_t size)
 {
-	struct iobuf *self = calloc(1, sizeof(struct iobuf));
+	struct iobuf *self = static_cast<iobuf*>(calloc(1, sizeof(struct iobuf)));
 	if (self) {
 		grow(self, size);
 	}
