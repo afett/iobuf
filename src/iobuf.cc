@@ -116,7 +116,7 @@ void iobuf::grow(size_t capacity)
 {
 	assert(capacity > capacity_);
 
-	void *n = realloc(data_, capacity);
+	void *n(realloc(data_, capacity));
 	if (n != NULL) {
 		data_ = n;
 		capacity_ = capacity;

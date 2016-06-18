@@ -85,7 +85,7 @@ static void test_one_byte()
 
 static bool memneq(void *start, int value, size_t len)
 {
-	for (size_t i = 0; i < len; ++i) {
+	for (size_t i(0); i < len; ++i) {
 		if (((char*)start)[i] != value) {
 			return false;
 		}
@@ -102,7 +102,7 @@ static void test_preallocated()
 	TEST_ASSERT(buf.wstart() != NULL);
 	TEST_ASSERT(buf.wsize() == 4096);
 
-	size_t size = buf.wsize();
+	size_t size(buf.wsize());
 	memset(buf.wstart(), 42, size);
 	buf.fill(size);
 
@@ -111,8 +111,8 @@ static void test_preallocated()
 	TEST_ASSERT(buf.wstart() != NULL);
 	TEST_ASSERT(buf.wsize() == 0);
 
-	char *rbuf = ((char *)buf.rstart());
-	for (size_t i = 0; i < 4096; ++i) {
+	char *rbuf(((char *)buf.rstart()));
+	for (size_t i(0); i < 4096; ++i) {
 		TEST_ASSERT(rbuf[i] == 42);
 		TEST_ASSERT(buf.rsize() >= 1);
 		buf.drain(1);
@@ -126,12 +126,12 @@ static void test_grow()
 {
 	iobuf buf;
 
-	for (size_t i = 0; i < 4096; ++i) {
+	for (size_t i(0); i < 4096; ++i) {
 		buf.reserve(i);
 		TEST_ASSERT(buf.wsize() == i);
 	}
 
-	for (size_t i = 4096; i != 0; --i) {
+	for (size_t i(4096); i != 0; --i) {
 		buf.reserve(i);
 		TEST_ASSERT(buf.wsize() == 4096);
 	}
@@ -208,12 +208,12 @@ static void fake_fd_init(struct fake_fd *src)
 {
 	srandom(time(NULL));
 
-	for (size_t i = 0; i < sizeof(src->in); ++i) {
+	for (size_t i(0); i < sizeof(src->in); ++i) {
 		src->in[i] = (rand() % 255) + 1;
 	}
 
-	for (size_t i = 0; i < 1000; ++i) {
-		size_t pos = 0;
+	for (size_t i(0); i < 1000; ++i) {
+		size_t pos(0);
 		do {
 			pos = rand() % sizeof(src->in);
 		} while (src->in[pos] == 0);
@@ -229,7 +229,7 @@ static ssize_t fake_read(struct fake_fd *src, void *buf, size_t count)
 		return 0;
 	}
 
-	size_t ret = (rand() % count) + 1;
+	size_t ret((rand() % count) + 1);
 	if (src->read + ret > sizeof(src->in)) {
 		ret = sizeof(src->in) - src->read;
 	}
@@ -246,12 +246,12 @@ static void test_random_access()
 	char out[sizeof(fd.in)];
 	memset(out, 0, sizeof(out));
 
-	size_t read = 0;
+	size_t read(0);
 	iobuf buf;
 	for (;;) {
 		buf.reserve(1024);
 		TEST_ASSERT(buf.wsize() >= 1024);
-		ssize_t ret = fake_read(&fd, buf.wstart(), 1024);
+		ssize_t ret(fake_read(&fd, buf.wstart(), 1024));
 		if (ret == 0) {
 			break;
 		}
