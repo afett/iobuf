@@ -24,68 +24,63 @@
 
 static void test_empty()
 {
-	struct iobuf *buf = iobuf_new();
-	TEST_ASSERT(iobuf_rstart(buf) == NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) == NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
+	iobuf buf;
+	TEST_ASSERT(buf.rstart() == NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() == NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 
-	iobuf_drain(buf, 0);
-	TEST_ASSERT(iobuf_rstart(buf) == NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) == NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
+	buf.drain(0);
+	TEST_ASSERT(buf.rstart() == NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() == NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 
-	iobuf_reserve(buf, 0);
-	TEST_ASSERT(iobuf_rstart(buf) == NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) == NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
+	buf.reserve(0);
+	TEST_ASSERT(buf.rstart() == NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() == NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 
-	iobuf_fill(buf, 0);
-	TEST_ASSERT(iobuf_rstart(buf) == NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) == NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
-
-	iobuf_free(buf);
+	buf.fill(0);
+	TEST_ASSERT(buf.rstart() == NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() == NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 }
 
 static void test_reserved()
 {
-	struct iobuf *buf = iobuf_new();
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
-	iobuf_free(buf);
+	iobuf buf;
+	buf.reserve(4096);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 4096);
 }
 
 static void test_one_byte()
 {
-	struct iobuf *buf = iobuf_new();
+	iobuf buf;
 
-	iobuf_reserve(buf, 1);
-	TEST_ASSERT(iobuf_rstart(buf) != NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 1);
+	buf.reserve(1);
+	TEST_ASSERT(buf.rstart() != NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 1);
 
-	*((char *)iobuf_wstart(buf)) = 42;
-	iobuf_fill(buf, 1);
-	TEST_ASSERT(iobuf_rstart(buf) != NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 1);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
+	*((char *)buf.wstart()) = 42;
+	buf.fill(1);
+	TEST_ASSERT(buf.rstart() != NULL);
+	TEST_ASSERT(buf.rsize() == 1);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 
-	TEST_ASSERT(*((char *)iobuf_rstart(buf)) == 42);
-	iobuf_drain(buf, 1);
+	TEST_ASSERT(*((char *)buf.rstart()) == 42);
+	buf.drain(1);
 
-	TEST_ASSERT(iobuf_rstart(buf) != NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 1);
-
-	iobuf_free(buf);
+	TEST_ASSERT(buf.rstart() != NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 1);
 }
 
 static bool memneq(void *start, int value, size_t len)
@@ -101,116 +96,107 @@ static bool memneq(void *start, int value, size_t len)
 
 static void test_preallocated()
 {
-	struct iobuf *buf = iobuf_new1(4096);
-	TEST_ASSERT(iobuf_rstart(buf) != NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
+	iobuf buf(4096);
+	TEST_ASSERT(buf.rstart() != NULL);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 4096);
 
-	size_t size = iobuf_wsize(buf);
-	memset(iobuf_wstart(buf), 42, size);
-	iobuf_fill(buf, size);
+	size_t size = buf.wsize();
+	memset(buf.wstart(), 42, size);
+	buf.fill(size);
 
-	TEST_ASSERT(iobuf_rstart(buf) != NULL);
-	TEST_ASSERT(iobuf_rsize(buf) == 4096);
-	TEST_ASSERT(iobuf_wstart(buf) != NULL);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
+	TEST_ASSERT(buf.rstart() != NULL);
+	TEST_ASSERT(buf.rsize() == 4096);
+	TEST_ASSERT(buf.wstart() != NULL);
+	TEST_ASSERT(buf.wsize() == 0);
 
-	char *rbuf = ((char *)iobuf_rstart(buf));
+	char *rbuf = ((char *)buf.rstart());
 	for (size_t i = 0; i < 4096; ++i) {
 		TEST_ASSERT(rbuf[i] == 42);
-		TEST_ASSERT(iobuf_rsize(buf) >= 1);
-		iobuf_drain(buf, 1);
+		TEST_ASSERT(buf.rsize() >= 1);
+		buf.drain(1);
 	}
 
-	TEST_ASSERT(iobuf_rsize(buf) == 0);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
-
-	iobuf_free(buf);
+	TEST_ASSERT(buf.rsize() == 0);
+	TEST_ASSERT(buf.wsize() == 4096);
 }
 
 static void test_grow()
 {
-	struct iobuf *buf = iobuf_new();
+	iobuf buf;
 
 	for (size_t i = 0; i < 4096; ++i) {
-		iobuf_reserve(buf, i);
-		TEST_ASSERT(iobuf_wsize(buf) == i);
+		buf.reserve(i);
+		TEST_ASSERT(buf.wsize() == i);
 	}
 
 	for (size_t i = 4096; i != 0; --i) {
-		iobuf_reserve(buf, i);
-		TEST_ASSERT(iobuf_wsize(buf) == 4096);
+		buf.reserve(i);
+		TEST_ASSERT(buf.wsize() == 4096);
 	}
-
-	iobuf_free(buf);
 }
 
 static void test_fill_drain()
 {
-	struct iobuf *buf = iobuf_new();
+	iobuf buf;
 
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
+	buf.reserve(4096);
+	TEST_ASSERT(buf.wsize() == 4096);
 
-	iobuf_fill(buf, 2048);
-	TEST_ASSERT(iobuf_wsize(buf) == 2048);
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	iobuf_fill(buf, 2048);
-	TEST_ASSERT(iobuf_wsize(buf) == 2048);
-	TEST_ASSERT(iobuf_rsize(buf) == 4096);
-	iobuf_drain(buf, 2048);
-	TEST_ASSERT_EQUAL(2048, iobuf_wsize(buf));
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	iobuf_drain(buf, 2048);
-	TEST_ASSERT_EQUAL(4096 + 2048, iobuf_wsize(buf));
-
-	iobuf_free(buf);
+	buf.fill(2048);
+	TEST_ASSERT(buf.wsize() == 2048);
+	TEST_ASSERT(buf.rsize() == 2048);
+	buf.reserve(4096);
+	TEST_ASSERT(buf.wsize() == 4096);
+	TEST_ASSERT(buf.rsize() == 2048);
+	buf.fill(2048);
+	TEST_ASSERT(buf.wsize() == 2048);
+	TEST_ASSERT(buf.rsize() == 4096);
+	buf.drain(2048);
+	TEST_ASSERT_EQUAL(2048, buf.wsize());
+	TEST_ASSERT(buf.rsize() == 2048);
+	buf.drain(2048);
+	TEST_ASSERT_EQUAL(4096 + 2048, buf.wsize());
 }
 
 static void test_reclaim()
 {
-	struct iobuf *buf = iobuf_new();
+	iobuf buf;
 
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
-	memset(iobuf_wstart(buf), 1, 2048);
-	iobuf_fill(buf, 2048);
-	TEST_ASSERT(iobuf_wsize(buf) == 2048);
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	TEST_ASSERT(memneq(iobuf_rstart(buf), 1, iobuf_rsize(buf)));
-	iobuf_drain(buf, 1024);
-	TEST_ASSERT_EQUAL(2048, iobuf_wsize(buf));
-	TEST_ASSERT_EQUAL(1024, iobuf_rsize(buf));
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT_EQUAL(4096, iobuf_wsize(buf));
-	TEST_ASSERT_EQUAL(1024, iobuf_rsize(buf));
-	TEST_ASSERT(memneq(iobuf_rstart(buf), 1, iobuf_rsize(buf)));
-
-	iobuf_free(buf);
+	buf.reserve(4096);
+	TEST_ASSERT(buf.wsize() == 4096);
+	memset(buf.wstart(), 1, 2048);
+	buf.fill(2048);
+	TEST_ASSERT(buf.wsize() == 2048);
+	TEST_ASSERT(buf.rsize() == 2048);
+	TEST_ASSERT(memneq(buf.rstart(), 1, buf.rsize()));
+	buf.drain(1024);
+	TEST_ASSERT_EQUAL(2048, buf.wsize());
+	TEST_ASSERT_EQUAL(1024, buf.rsize());
+	buf.reserve(4096);
+	TEST_ASSERT_EQUAL(4096, buf.wsize());
+	TEST_ASSERT_EQUAL(1024, buf.rsize());
+	TEST_ASSERT(memneq(buf.rstart(), 1, buf.rsize()));
 }
 
 static void test_reclaim_full()
 {
-	struct iobuf *buf = iobuf_new();
-	iobuf_reserve(buf, 4096);
-	TEST_ASSERT(iobuf_wsize(buf) == 4096);
-	memset(iobuf_wstart(buf), 1, 4096);
-	iobuf_fill(buf, 4096);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
-	TEST_ASSERT(iobuf_rsize(buf) == 4096);
-	TEST_ASSERT(memneq(iobuf_rstart(buf), 1, iobuf_rsize(buf)));
-	iobuf_drain(buf, 2048);
-	TEST_ASSERT(iobuf_wsize(buf) == 0);
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	iobuf_reserve(buf, 2048);
-	TEST_ASSERT(iobuf_wsize(buf) == 2048);
-	TEST_ASSERT(iobuf_rsize(buf) == 2048);
-	TEST_ASSERT(memneq(iobuf_rstart(buf), 1, iobuf_rsize(buf)));
-	iobuf_free(buf);
+	iobuf buf;
+	buf.reserve(4096);
+	TEST_ASSERT(buf.wsize() == 4096);
+	memset(buf.wstart(), 1, 4096);
+	buf.fill(4096);
+	TEST_ASSERT(buf.wsize() == 0);
+	TEST_ASSERT(buf.rsize() == 4096);
+	TEST_ASSERT(memneq(buf.rstart(), 1, buf.rsize()));
+	buf.drain(2048);
+	TEST_ASSERT(buf.wsize() == 0);
+	TEST_ASSERT(buf.rsize() == 2048);
+	buf.reserve(2048);
+	TEST_ASSERT(buf.wsize() == 2048);
+	TEST_ASSERT(buf.rsize() == 2048);
+	TEST_ASSERT(memneq(buf.rstart(), 1, buf.rsize()));
 }
 
 struct fake_fd {
@@ -261,11 +247,11 @@ static void test_random_access()
 	memset(out, 0, sizeof(out));
 
 	size_t read = 0;
-	struct iobuf *buf = iobuf_new();
+	iobuf buf;
 	for (;;) {
-		iobuf_reserve(buf, 1024);
-		TEST_ASSERT(iobuf_wsize(buf) >= 1024);
-		ssize_t ret = fake_read(&fd, iobuf_wstart(buf), 1024);
+		buf.reserve(1024);
+		TEST_ASSERT(buf.wsize() >= 1024);
+		ssize_t ret = fake_read(&fd, buf.wstart(), 1024);
 		if (ret == 0) {
 			break;
 		}
@@ -275,8 +261,6 @@ static void test_random_access()
 	}
 
 	TEST_ASSERT_EQUAL(sizeof(fd.in), read);
-
-	iobuf_free(buf);
 }
 
 int main(int argc, char *argv[])

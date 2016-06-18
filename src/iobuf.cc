@@ -30,114 +30,103 @@
 
 #include <iobuf.h>
 
-static void grow(struct iobuf *, size_t);
-static void reclaim(struct iobuf *);
 
-void iobuf_fill(struct iobuf *self, size_t size)
+void iobuf::fill(size_t size)
 {
-	assert(self);
-	assert(self->wstart + size <= self->capacity);
-	self->wstart += size;
+	assert(wstart_ + size <= capacity_);
+	wstart_ += size;
 }
 
-size_t iobuf_rsize(struct iobuf *self)
+size_t iobuf::rsize() const
 {
-	assert(self);
-	return self->wstart - self->rstart;
+	return wstart_ - rstart_;
 }
 
-void *iobuf_rstart(struct iobuf *self)
+void *iobuf::rstart() const
 {
-	assert(self);
-	return (char *)self->data + self->rstart;
+	return (char *)data_ + rstart_;
 }
 
-size_t iobuf_wsize(struct iobuf *self)
+size_t iobuf::wsize() const
 {
-	assert(self);
-	return self->capacity - self->wstart;
+	return capacity_ - wstart_;
 }
 
-void *iobuf_wstart(struct iobuf *self)
+void *iobuf::wstart() const
 {
-	assert(self);
-	return (char *)self->data + self->wstart;
+	return (char *)data_ + wstart_;
 }
 
-void iobuf_drain(struct iobuf *self, size_t size)
+void iobuf::drain(size_t size)
 {
-	assert(self);
-	assert(size <= iobuf_rsize(self));
+	assert(size <= rsize());
 
-	self->rstart += size;
-	if (self->rstart == self->wstart) {
-		self->wstart = 0;
-		self->rstart = 0;
+	rstart_ += size;
+	if (rstart_ == wstart_) {
+		wstart_ = 0;
+		rstart_ = 0;
 	}
 }
 
-struct iobuf *iobuf_new()
+iobuf::iobuf()
+:
+	data_(0),
+	capacity_(0),
+	rstart_(0),
+	wstart_(0)
+{ }
+
+iobuf::iobuf(size_t size)
+:
+	data_(0),
+	capacity_(0),
+	rstart_(0),
+	wstart_(0)
 {
-	return static_cast<iobuf*>(calloc(1, sizeof(struct iobuf)));
+	grow(size);
 }
 
-struct iobuf *iobuf_new1(size_t size)
+iobuf::~iobuf()
 {
-	struct iobuf *self = static_cast<iobuf*>(calloc(1, sizeof(struct iobuf)));
-	if (self) {
-		grow(self, size);
-	}
-	return self;
+	free(data_);
 }
 
-void iobuf_free(struct iobuf *self)
-{
-	assert(self);
-
-	free(self->data);
-	free(self);
-}
-
-void iobuf_reserve(struct iobuf *self, size_t size)
+void iobuf::reserve(size_t size)
 {
 	if (size == 0) {
 		return;
 	}
 
-	assert(self);
-	if (size <= iobuf_wsize(self)) {
+	if (size <= wsize()) {
 		return;
 	}
 
-	if (self->rstart != 0) {
-		reclaim(self);
+	if (rstart_ != 0) {
+		reclaim();
 	}
 
-	if (size <= iobuf_wsize(self)) {
+	if (size <= wsize()) {
 		return;
 	}
 
-	grow(self, self->capacity + (size - iobuf_wsize(self)));
+	grow(capacity_ + (size - wsize()));
 }
 
-static void grow(struct iobuf *self, size_t capacity)
+void iobuf::grow(size_t capacity)
 {
-	assert(self);
-	assert(capacity > self->capacity);
+	assert(capacity > capacity_);
 
-	void *n = realloc(self->data, capacity);
+	void *n = realloc(data_, capacity);
 	if (n != NULL) {
-		self->data = n;
-		self->capacity = capacity;
+		data_ = n;
+		capacity_ = capacity;
 	}
 }
 
-static void reclaim(struct iobuf *self)
+void iobuf::reclaim()
 {
-	assert(self);
-
-	size_t rsize = iobuf_rsize(self);
-	memmove(self->data, iobuf_rstart(self), rsize);
-	self->rstart = 0;
-	self->wstart = rsize;
+	size_t srsize(rsize());
+	memmove(data_, rstart(), srsize);
+	rstart_ = 0;
+	wstart_ = srsize;
 }

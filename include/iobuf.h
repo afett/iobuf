@@ -41,66 +41,63 @@
 
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class iobuf {
+public:
+	/* create a new iobuf */
+	iobuf();
 
-struct iobuf {
-	void *data;
-	size_t capacity;
-	size_t rstart;
-	size_t wstart;
+	/* create a new iobuf with the given wsize*/
+	iobuf(size_t);
+
+	/* free iobuf and it's data */
+	~iobuf();
+
+	/* call reserve before writing at most iobuf_wsize() bytes
+	 * starting at iobuf_wstart()
+	 *
+	 * this will invalidate any results from previous calls to
+	 * rsize, rstart, wsize, wstart
+	 */
+	void reserve(size_t);
+
+	/* call fill after writing at most iobuf_wsize() bytes
+	 * starting at iobuf_wstart()
+	 *
+	 * this will invalidate any results from previous calls to
+	 * rsize and wsize
+	 */
+	void fill(size_t);
+
+	/* maximum size that may be read from rstart, and passed
+	 * to drain
+	 */
+	size_t rsize() const;
+
+	/* start of data to read */
+	void *rstart() const;
+
+	/* call drain after you read at most iobuf_rsize() bytes
+	 * starting at iobuf_rstart()
+	 *
+	 * this will invalidate any results from previous calls to
+	 * rsize and wsize
+	 */
+	void drain(size_t);
+
+	/* maximum size that may be written to wstart */
+	size_t wsize() const;
+
+	/* start of data to write */
+	void *wstart() const;
+
+private:
+	void grow(size_t);
+	void reclaim();
+
+	void *data_;
+	size_t capacity_;
+	size_t rstart_;
+	size_t wstart_;
 };
-
-/* create a new iobuf */
-struct iobuf *iobuf_new();
-
-/* create a new iobuf with the given wsize*/
-struct iobuf *iobuf_new1(size_t);
-
-/* free iobuf and it's data */
-void iobuf_free(struct iobuf *);
-
-/* call reserve before writing at most iobuf_wsize() bytes
- * starting at iobuf_wstart()
- *
- * this will invalidate any results from previous calls to
- * rsize, rstart, wsize, wstart
- */
-void iobuf_reserve(struct iobuf *, size_t);
-
-/* call fill after writing at most iobuf_wsize() bytes
- * starting at iobuf_wstart()
- *
- * this will invalidate any results from previous calls to
- * rsize and wsize
- */
-void iobuf_fill(struct iobuf *, size_t);
-
-/* maximum size that may be read from rstart, and passed
- * to drain
- */
-size_t iobuf_rsize(struct iobuf *);
-
-/* start of data to read */
-void *iobuf_rstart(struct iobuf *);
-
-/* call drain after you read at most iobuf_rsize() bytes
- * starting at iobuf_rstart()
- *
- * this will invalidate any results from previous calls to
- * rsize and wsize
- */
-void iobuf_drain(struct iobuf *, size_t);
-
-/* maximum size that may be written to wstart */
-size_t iobuf_wsize(struct iobuf *);
-
-/* start of data to write */
-void *iobuf_wstart(struct iobuf *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
