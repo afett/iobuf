@@ -70,7 +70,7 @@ void iobuf::drain(size_t size)
 
 iobuf::iobuf()
 :
-	data_(0),
+	data_(nullptr),
 	capacity_(0),
 	rstart_(0),
 	wstart_(0)
@@ -78,7 +78,7 @@ iobuf::iobuf()
 
 iobuf::iobuf(size_t size)
 :
-	data_(0),
+	data_(nullptr),
 	capacity_(0),
 	rstart_(0),
 	wstart_(0)
@@ -117,7 +117,7 @@ void iobuf::grow(size_t capacity)
 	assert(capacity > capacity_);
 
 	void *n(realloc(data_, capacity));
-	if (n != NULL) {
+	if (n != nullptr) {
 		data_ = n;
 		capacity_ = capacity;
 	}
