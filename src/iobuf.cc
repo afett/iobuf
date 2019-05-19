@@ -44,7 +44,7 @@ size_t iobuf::rsize() const
 
 void *iobuf::rstart() const
 {
-	return (char *)data_ + rstart_;
+	return static_cast<char *>(data_) + rstart_;
 }
 
 size_t iobuf::wsize() const
@@ -54,7 +54,7 @@ size_t iobuf::wsize() const
 
 void *iobuf::wstart() const
 {
-	return (char *)data_ + wstart_;
+	return static_cast<char *>(data_) + wstart_;
 }
 
 void iobuf::drain(size_t size)
