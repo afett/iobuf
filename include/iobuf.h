@@ -47,7 +47,7 @@ public:
 	iobuf();
 
 	/* create a new iobuf with the given wsize*/
-	iobuf(size_t);
+	explicit iobuf(size_t);
 
 	/* free iobuf and it's data */
 	~iobuf();
