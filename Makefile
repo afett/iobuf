@@ -1,7 +1,7 @@
 IOBUF_DEBUG ?=
 
 CXX ?= g++
-CXXFLAGS = -Wall -Wextra -Werror -fPIC -D_XOPEN_SOURCE=600
+CXXFLAGS = -Wall -Wextra -Werror -fPIC -D_XOPEN_SOURCE=600 -std=c++11
 LDFLAGS = -L.
 CPPFLAGS = -Iinclude
 
